@@ -99,4 +99,59 @@ public class DishServiceImpl implements DishService {
         //根据菜品id集合删除关联的口味数据
         dishFlavorMapper.deleteByDishIds(ids);
     }
+
+    /**
+     * 根据id查询菜品及其口味
+     * @param id
+     * @return
+     */
+    @Override
+    public DishVO getByIdWithFlavor(Long id) {
+        //根据id来查询菜品数据
+        Dish dish = dishMapper.getById(id);
+        //根据菜品id来查询口味数据
+        List<DishFlavor> flavors = dishFlavorMapper.getByDishId(id);
+        //将查询到的数据封装到DishVO中
+        DishVO dishVO = new DishVO();
+        BeanUtils.copyProperties(dish, dishVO);
+        dishVO.setFlavors(flavors);
+        return dishVO;
+    }
+
+    /**
+     * 根据id更新菜品及其口味
+     * @param dishDTO
+     */
+    @Override
+    public void updateWithFlavor(DishDTO dishDTO) {
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        //修改菜品表基本信息
+        dishMapper.update(dish);
+        //修改口味表先删掉原有的口味数据
+        dishFlavorMapper.deleteByDishId(dishDTO.getId());
+        //修改口味表插入新的口味数据
+        List<DishFlavor> flavors = dishDTO.getFlavors();
+        if (flavors != null && flavors.size() > 0){
+            for (DishFlavor flavor : flavors) {
+                flavor.setDishId(dishDTO.getId());
+            }
+            dishFlavorMapper.insertBatch(flavors);
+        }
+    }
+
+    /**
+     * 修改菜品起售/停售状态
+     * @param status
+     * @param id
+     */
+    @Override
+    @AutoFill(OperationType.UPDATE)
+    public void updateStatus(Integer status, Long id) {
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+        dishMapper.updateStatus(dish);
+    }
 }
