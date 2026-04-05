@@ -7,7 +7,7 @@ sky:
     username: root
     password: root
   redis:
-    host: 1922.168.88.130
+    host: 192.168.88.130
     port: 6379
     password: root
     database: 0
